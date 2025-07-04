@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Users, BarChart3, Bell, Filter, Search, Calendar, Clock, AlertTriangle, CheckCircle, TrendingUp, Target, User, CalendarDays } from 'lucide-react';
-import { Task, User as UserType, Notification } from '../types';
+import { Plus, Edit2, Users, BarChart3, Bell, Filter, Search, Calendar, Clock, AlertTriangle, CheckCircle, TrendingUp, Target, SlidersHorizontal } from 'lucide-react';
+import { Task, User, Notification } from '../types';
 import { getTasks, getUsers, saveTasks, saveUsers, getNotifications, saveNotifications } from '../utils/storage';
 import { useAuth } from '../contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
@@ -12,7 +12,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(getTasks());
-  const [users, setUsers] = useState<UserType[]>(getUsers());
+  const [users, setUsers] = useState<User[]>(getUsers());
   const [notifications, setNotifications] = useState<Notification[]>(getNotifications());
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -94,7 +94,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     e.preventDefault();
     if (!newUser.username || !newUser.email || !newUser.password || !user?.teamId) return;
 
-    const newUserObj: UserType = {
+    const newUserObj: User = {
       id: Date.now().toString(),
       username: newUser.username,
       email: newUser.email,
@@ -387,6 +387,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                     required
                   />
                 </div>
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                  <textarea
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                    rows={4}
+                    placeholder="Describe the task in detail"
+                  />
+                </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">Priority</label>
                   <select
@@ -432,16 +442,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                   />
                 </div>
-                <div className="lg:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                    rows={4}
-                    placeholder="Describe the task in detail"
-                  />
-                </div>
               </div>
               <div className="flex justify-end space-x-4">
                 <button
@@ -477,28 +477,34 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                 />
               </div>
             </div>
-            <div className="flex space-x-4">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              >
-                <option value="all">All Status</option>
-                <option value="open">Open</option>
-                <option value="in-progress">In Progress</option>
-                <option value="completed">Completed</option>
-              </select>
-              <select
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-              >
-                <option value="all">All Priority</option>
-                <option value="urgent">Urgent</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                >
+                  <option value="all">All Status</option>
+                  <option value="open">Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                >
+                  <option value="all">All Priority</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -519,7 +525,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Date</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">End Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created Date</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
@@ -548,11 +554,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                           ))}
                         </select>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          <User className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm text-gray-900">{assignedByUser?.username}</span>
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {assignedByUser?.username}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}>
@@ -565,27 +568,19 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {task.startDate ? (
-                          <div className="flex items-center space-x-1">
-                            <CalendarDays className="w-4 h-4 text-gray-400" />
-                            <span>{new Date(task.startDate).toLocaleDateString()}</span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">Not set</span>
-                        )}
+                        {task.startDate ? new Date(task.startDate).toLocaleDateString() : '-'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {task.endDate ? (
-                          <div className={`flex items-center space-x-1 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
-                            <Calendar className="w-4 h-4" />
-                            <span>{new Date(task.endDate).toLocaleDateString()}</span>
+                          <div className={isOverdue ? 'text-red-600 font-semibold' : ''}>
+                            {new Date(task.endDate).toLocaleDateString()}
                             {isOverdue && <div className="text-xs">OVERDUE</div>}
                           </div>
                         ) : (
-                          <span className="text-gray-400">Not set</span>
+                          <span className="text-gray-400">No end date</span>
                         )}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {new Date(task.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -898,11 +893,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   <div className="text-xs text-gray-500">
                     Joined: {new Date(member.createdAt).toLocaleDateString()}
                   </div>
-                  {addedByUser && (
-                    <div className="text-xs text-gray-500">
-                      Added by: <span className="font-medium text-gray-700">{addedByUser.username}</span>
-                    </div>
-                  )}
+                  <div className="text-xs text-gray-500">
+                    Added by: <span className="font-medium text-gray-700">{addedByUser?.username || 'System'}</span>
+                  </div>
                 </div>
               </div>
             );

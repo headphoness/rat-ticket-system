@@ -1,18 +1,16 @@
 import React, { useState } from 'react';
-import { Plus, Users, BarChart3, Eye, TrendingUp, Building2, UserCheck, Activity, Calendar, Filter, Download, RefreshCw, Search, Edit, Trash2, User, Shield } from 'lucide-react';
-import { User as UserType, Team, Task } from '../types';
+import { Plus, Users, BarChart3, Eye, TrendingUp, Building2, UserCheck, Activity, Calendar, Filter, Download, RefreshCw, Search, Edit, Trash2 } from 'lucide-react';
+import { User, Team, Task } from '../types';
 import { getUsers, getTeams, getTasks, saveUsers, saveTeams, getUserById, getNotifications, saveNotifications } from '../utils/storage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area } from 'recharts';
 import TeamDetailModal from './TeamDetailModal';
-import { useAuth } from '../contexts/AuthContext';
 
 interface SuperuserDashboardProps {
   activeTab: string;
 }
 
 const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) => {
-  const { user: currentUser } = useAuth();
-  const [users, setUsers] = useState<UserType[]>(getUsers());
+  const [users, setUsers] = useState<User[]>(getUsers());
   const [teams, setTeams] = useState<Team[]>(getTeams());
   const [tasks] = useState<Task[]>(getTasks());
   const [notifications, setNotifications] = useState(getNotifications());
@@ -22,12 +20,13 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
   const [showTeamDetail, setShowTeamDetail] = useState(false);
+  const [createNewAdmin, setCreateNewAdmin] = useState(false);
 
   const [newTeam, setNewTeam] = useState({
     name: '',
     description: '',
     department: '',
-    existingAdminId: '',
+    adminId: '',
     newAdminUsername: '',
     newAdminEmail: '',
     newAdminPassword: ''
@@ -45,18 +44,18 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
     e.preventDefault();
     if (!newTeam.name || !newTeam.department) return;
 
-    let adminId = newTeam.existingAdminId;
+    let adminId = newTeam.adminId;
 
-    // Create new admin if specified
-    if (!adminId && newTeam.newAdminUsername && newTeam.newAdminEmail && newTeam.newAdminPassword) {
-      const newAdmin: UserType = {
+    // Create new admin if needed
+    if (createNewAdmin && newTeam.newAdminUsername && newTeam.newAdminEmail && newTeam.newAdminPassword) {
+      const newAdmin: User = {
         id: Date.now().toString(),
         username: newTeam.newAdminUsername,
         email: newTeam.newAdminEmail,
         password: newTeam.newAdminPassword,
         role: 'admin',
         createdAt: new Date(),
-        addedBy: currentUser?.id
+        addedBy: '1' // superuser
       };
 
       const updatedUsers = [...users, newAdmin];
@@ -71,11 +70,11 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
       id: Date.now().toString(),
       name: newTeam.name,
       description: newTeam.description,
+      department: newTeam.department,
       adminIds: [adminId],
       memberIds: [adminId],
       createdAt: new Date(),
-      department: newTeam.department,
-      createdBy: currentUser?.id || '1'
+      createdBy: '1' // superuser
     };
 
     const updatedTeams = [...teams, team];
@@ -95,7 +94,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
       id: `${Date.now()}-${admin.id}`,
       userId: admin.id,
       type: 'team_created' as const,
-      message: `A new team "${newTeam.name}" has been created by ${currentUser?.username}`,
+      message: `A new team "${newTeam.name}" has been created by superuser`,
       read: false,
       createdAt: new Date(),
       teamId: team.id
@@ -105,15 +104,8 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
     setNotifications(updatedNotifications);
     saveNotifications(updatedNotifications);
 
-    setNewTeam({ 
-      name: '', 
-      description: '', 
-      department: '', 
-      existingAdminId: '', 
-      newAdminUsername: '', 
-      newAdminEmail: '', 
-      newAdminPassword: '' 
-    });
+    setNewTeam({ name: '', description: '', department: '', adminId: '', newAdminUsername: '', newAdminEmail: '', newAdminPassword: '' });
+    setCreateNewAdmin(false);
     setShowCreateTeam(false);
   };
 
@@ -121,7 +113,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
     e.preventDefault();
     if (!newUser.username || !newUser.email || !newUser.password) return;
 
-    const user: UserType = {
+    const user: User = {
       id: Date.now().toString(),
       username: newUser.username,
       email: newUser.email,
@@ -129,7 +121,8 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
       role: newUser.role,
       teamId: newUser.teamId || undefined,
       createdAt: new Date(),
-      addedBy: currentUser?.id
+      lastLogin: new Date(),
+      addedBy: '1' // superuser
     };
 
     const updatedUsers = [...users, user];
@@ -232,8 +225,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
 
   const filteredTeams = teams.filter(team =>
     team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    team.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    team.department.toLowerCase().includes(searchTerm.toLowerCase())
+    team.description.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const filteredUsers = users.filter(user =>
@@ -382,77 +374,91 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
                     <option value="Sales">Sales</option>
                     <option value="QA">Quality Assurance</option>
                     <option value="Operations">Operations</option>
-                    <option value="HR">Human Resources</option>
-                    <option value="Finance">Finance</option>
                   </select>
-                </div>
-                <div className="lg:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea
-                    value={newTeam.description}
-                    onChange={(e) => setNewTeam({ ...newTeam, description: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                    rows={3}
-                    placeholder="Describe the team's purpose and responsibilities"
-                  />
                 </div>
               </div>
 
-              <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Team Admin Assignment</h3>
-                <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                <textarea
+                  value={newTeam.description}
+                  onChange={(e) => setNewTeam({ ...newTeam, description: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  rows={3}
+                  placeholder="Describe the team's purpose and responsibilities"
+                />
+              </div>
+
+              <div className="border-t pt-6">
+                <div className="flex items-center space-x-4 mb-4">
+                  <button
+                    type="button"
+                    onClick={() => setCreateNewAdmin(false)}
+                    className={`px-4 py-2 rounded-lg transition-colors ${!createNewAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}
+                  >
+                    Select Existing Admin
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCreateNewAdmin(true)}
+                    className={`px-4 py-2 rounded-lg transition-colors ${createNewAdmin ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-600'}`}
+                  >
+                    Create New Admin
+                  </button>
+                </div>
+
+                {!createNewAdmin ? (
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">Existing Admin</label>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">Select Admin</label>
                     <select
-                      value={newTeam.existingAdminId}
-                      onChange={(e) => setNewTeam({ ...newTeam, existingAdminId: e.target.value })}
+                      value={newTeam.adminId}
+                      onChange={(e) => setNewTeam({ ...newTeam, adminId: e.target.value })}
                       className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      required={!createNewAdmin}
                     >
-                      <option value="">Select Existing Admin</option>
+                      <option value="">Select Admin</option>
                       {users.filter(user => user.role === 'admin' && !user.teamId).map(user => (
                         <option key={user.id} value={user.id}>{user.username} ({user.email})</option>
                       ))}
                     </select>
                   </div>
-                  
-                  <div className="text-center text-gray-500 font-medium">OR</div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                ) : (
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Admin Username</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Username *</label>
                       <input
                         type="text"
                         value={newTeam.newAdminUsername}
                         onChange={(e) => setNewTeam({ ...newTeam, newAdminUsername: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Enter username"
-                        disabled={!!newTeam.existingAdminId}
+                        required={createNewAdmin}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Admin Email</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
                       <input
                         type="email"
                         value={newTeam.newAdminEmail}
                         onChange={(e) => setNewTeam({ ...newTeam, newAdminEmail: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Enter email"
-                        disabled={!!newTeam.existingAdminId}
+                        required={createNewAdmin}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">New Admin Password</label>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
                       <input
                         type="password"
                         value={newTeam.newAdminPassword}
                         onChange={(e) => setNewTeam({ ...newTeam, newAdminPassword: e.target.value })}
                         className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                         placeholder="Enter password"
-                        disabled={!!newTeam.existingAdminId}
+                        required={createNewAdmin}
                       />
                     </div>
                   </div>
-                </div>
+                )}
               </div>
 
               <div className="flex justify-end space-x-4">
@@ -547,20 +553,17 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
                     </div>
                   )}
 
-                  <div className="space-y-2 text-xs text-gray-500">
+                  <div className="text-xs text-gray-500 space-y-1">
                     <div>
-                      <span className="font-medium">Admin{admins.length > 1 ? 's' : ''}:</span>
-                      <span className="ml-1 text-gray-700">
+                      Admin: <span className="font-medium text-gray-700">
                         {admins.map(admin => admin?.username).join(', ')}
                       </span>
                     </div>
                     <div>
-                      <span className="font-medium">Created:</span>
-                      <span className="ml-1 text-gray-700">{new Date(team.createdAt).toLocaleDateString()}</span>
+                      Created: <span className="font-medium text-gray-700">{new Date(team.createdAt).toLocaleDateString()}</span>
                     </div>
                     <div>
-                      <span className="font-medium">By:</span>
-                      <span className="ml-1 text-gray-700">{createdByUser?.username}</span>
+                      By: <span className="font-medium text-gray-700">{createdByUser?.username}</span>
                     </div>
                   </div>
                 </div>
@@ -772,7 +775,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
                   >
                     <option value="">No Team</option>
                     {teams.map(team => (
-                      <option key={team.id} value={team.id}>{team.name} - {team.department}</option>
+                      <option key={team.id} value={team.id}>{team.name}</option>
                     ))}
                   </select>
                 </div>
@@ -877,14 +880,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {addedByUser ? (
-                          <div className="flex items-center space-x-1">
-                            <User className="w-3 h-3" />
-                            <span>{addedByUser.username}</span>
-                          </div>
-                        ) : (
-                          <span className="text-gray-400">System</span>
-                        )}
+                        {addedByUser?.username || 'System'}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : 'Never'}

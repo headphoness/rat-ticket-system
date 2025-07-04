@@ -20,7 +20,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
       const inProgressTasks = memberTasks.filter(task => task.status === 'in-progress').length;
       const openTasks = memberTasks.filter(task => task.status === 'open').length;
       const overdueTasks = memberTasks.filter(task => 
-        task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
+        task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed'
       ).length;
       
       const performance = memberTasks.length > 0 ? Math.round((completedTasks / memberTasks.length) * 100) : 0;
@@ -44,7 +44,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
     const completedTasks = teamTasks.filter(t => t.status === 'completed').length;
     const inProgressTasks = teamTasks.filter(t => t.status === 'in-progress').length;
     const overdueTasks = teamTasks.filter(t => 
-      t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
+      t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
     ).length;
     
     return {
@@ -75,7 +75,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
   const memberPerformance = getMemberPerformance();
   const teamStats = getTeamStats();
   const taskDistribution = getTaskDistribution();
-  const admin = users.find(u => u.id === team.adminId);
+  const admins = team.adminIds.map(id => users.find(u => u.id === id)).filter(Boolean);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -89,7 +89,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
               <div className="flex items-center space-x-6 text-sm">
                 <div className="flex items-center space-x-2">
                   <User className="w-4 h-4" />
-                  <span>Admin: {admin?.username}</span>
+                  <span>Admin: {admins.map(admin => admin?.username).join(', ')}</span>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4" />
@@ -97,7 +97,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
                 </div>
                 <div className="flex items-center space-x-2">
                   <Target className="w-4 h-4" />
-                  <span>Target: {team.targetCompletion || 85}%</span>
+                  <span>Department: {team.department}</span>
                 </div>
               </div>
             </div>
@@ -321,7 +321,7 @@ const TeamDetailModal: React.FC<TeamDetailModalProps> = ({ team, isOpen, onClose
                   </div>
                   <div>
                     <span className="text-indigo-600 font-medium">Department:</span>
-                    <span className="ml-2 font-bold text-indigo-900">{team.department || 'General'}</span>
+                    <span className="ml-2 font-bold text-indigo-900">{team.department}</span>
                   </div>
                 </div>
               </div>
