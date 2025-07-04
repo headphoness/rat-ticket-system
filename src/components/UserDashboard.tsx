@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckSquare, Clock, User, Bell, Calendar, Target, TrendingUp, Award, AlertTriangle, Play, CheckCircle } from 'lucide-react';
+import { CheckSquare, Clock, User, Bell, Calendar, Target, TrendingUp, Award, AlertTriangle, Play, CheckCircle, Search, Filter, SlidersHorizontal, CalendarDays } from 'lucide-react';
 import { Task, User as UserType, Notification } from '../types';
 import { getTasks, getUsers, saveTasks, getNotifications, saveNotifications } from '../utils/storage';
 import { useAuth } from '../contexts/AuthContext';
@@ -13,10 +13,22 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(getTasks());
   const [notifications, setNotifications] = useState<Notification[]>(getNotifications());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
   const users = getUsers();
 
   const myTasks = tasks.filter(task => task.assignedTo === user?.id);
   const userNotifications = notifications.filter(n => n.userId === user?.id && !n.read);
+
+  const filteredTasks = myTasks.filter(task => {
+    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         task.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+    const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+    
+    return matchesSearch && matchesStatus && matchesPriority;
+  });
 
   const handleMarkComplete = (taskId: string) => {
     const updatedTasks = tasks.map(task => {
@@ -128,7 +140,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
     const inProgressTasks = myTasks.filter(task => task.status === 'in-progress').length;
     const openTasks = myTasks.filter(task => task.status === 'open').length;
     const overdueTasks = myTasks.filter(task => 
-      task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed'
+      task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed'
     ).length;
 
     return {
@@ -306,24 +318,73 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
           </div>
         )}
 
+        {/* Professional Search and Filter */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search tasks..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                />
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="all">All Status</option>
+                  <option value="open">Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+                
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="all">All Priority</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                
+                <button className="p-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Tasks List */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100">
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">My Task List</h2>
-              <span className="text-sm text-gray-500">{myTasks.length} tasks total</span>
+              <span className="text-sm text-gray-500">{filteredTasks.length} tasks found</span>
             </div>
           </div>
           <div className="p-6">
-            {myTasks.length === 0 ? (
+            {filteredTasks.length === 0 ? (
               <div className="text-center py-12">
                 <Target className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">No tasks assigned yet</h3>
-                <p className="text-gray-500">Your assigned tasks will appear here once they're created by your admin.</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">No tasks found</h3>
+                <p className="text-gray-500">Try adjusting your search or filter criteria.</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {myTasks
+                {filteredTasks
                   .sort((a, b) => {
                     // Sort by status priority: open -> in-progress -> completed
                     const statusOrder = { 'open': 0, 'in-progress': 1, 'completed': 2 };
@@ -331,7 +392,7 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
                   })
                   .map(task => {
                     const assignedByUser = users.find(u => u.id === task.assignedBy);
-                    const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+                    const isOverdue = task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed';
                     
                     return (
                       <div key={task.id} className={`border rounded-xl p-6 transition-all hover:shadow-md ${
@@ -366,23 +427,38 @@ const UserDashboard: React.FC<UserDashboardProps> = ({ activeTab }) => {
                               )}
                             </div>
                             
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm text-gray-500">
+                              <div className="flex items-center">
+                                <Calendar className="w-4 h-4 mr-1" />
+                                Created: {new Date(task.createdAt).toLocaleDateString()}
+                              </div>
+                              {task.startedAt && (
+                                <div className="flex items-center text-blue-600">
+                                  <Play className="w-4 h-4 mr-1" />
+                                  Started: {new Date(task.startedAt).toLocaleDateString()}
+                                </div>
+                              )}
+                              {task.startDate && (
+                                <div className="flex items-center">
+                                  <CalendarDays className="w-4 h-4 mr-1" />
+                                  Start: {new Date(task.startDate).toLocaleDateString()}
+                                </div>
+                              )}
+                              {task.endDate && (
+                                <div className={`flex items-center ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  End: {new Date(task.endDate).toLocaleDateString()}
+                                </div>
+                              )}
+                            </div>
+                            
                             <div className="flex items-center justify-between">
                               <div className="flex items-center space-x-4 text-sm text-gray-500">
-                                <div className="flex items-center">
-                                  <Calendar className="w-4 h-4 mr-1" />
-                                  Created: {new Date(task.createdAt).toLocaleDateString()}
-                                </div>
-                                {task.startedAt && (
-                                  <div className="flex items-center text-blue-600">
-                                    <Play className="w-4 h-4 mr-1" />
-                                    Started: {new Date(task.startedAt).toLocaleDateString()}
-                                  </div>
+                                {task.estimatedHours && (
+                                  <div>Est: {task.estimatedHours}h</div>
                                 )}
-                                {task.dueDate && (
-                                  <div className={`flex items-center ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
-                                    <Clock className="w-4 h-4 mr-1" />
-                                    Due: {new Date(task.dueDate).toLocaleDateString()}
-                                  </div>
+                                {task.actualHours && (
+                                  <div>Actual: {task.actualHours}h</div>
                                 )}
                               </div>
                               

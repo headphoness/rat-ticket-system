@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Users, BarChart3, Bell, Filter, Search, Calendar, Clock, AlertTriangle, CheckCircle, TrendingUp, Target } from 'lucide-react';
-import { Task, User, Notification } from '../types';
+import { Plus, Edit2, Users, BarChart3, Bell, Filter, Search, Calendar, Clock, AlertTriangle, CheckCircle, TrendingUp, Target, User, CalendarDays } from 'lucide-react';
+import { Task, User as UserType, Notification } from '../types';
 import { getTasks, getUsers, saveTasks, saveUsers, getNotifications, saveNotifications } from '../utils/storage';
 import { useAuth } from '../contexts/AuthContext';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
@@ -12,7 +12,7 @@ interface AdminDashboardProps {
 const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
   const { user } = useAuth();
   const [tasks, setTasks] = useState<Task[]>(getTasks());
-  const [users, setUsers] = useState<User[]>(getUsers());
+  const [users, setUsers] = useState<UserType[]>(getUsers());
   const [notifications, setNotifications] = useState<Notification[]>(getNotifications());
   const [showCreateTask, setShowCreateTask] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
@@ -26,12 +26,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     description: '',
     priority: 'medium' as Task['priority'],
     assignedTo: '',
-    dueDate: ''
+    startDate: '',
+    endDate: ''
   });
 
   const [newUser, setNewUser] = useState({
     username: '',
     email: '',
+    password: '',
     role: 'user' as 'user'
   });
 
@@ -62,7 +64,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
       assignedBy: user.id,
       teamId: user.teamId!,
       createdAt: new Date(),
-      dueDate: newTask.dueDate ? new Date(newTask.dueDate) : undefined
+      startDate: newTask.startDate ? new Date(newTask.startDate) : undefined,
+      endDate: newTask.endDate ? new Date(newTask.endDate) : undefined
     };
 
     const updatedTasks = [...tasks, task];
@@ -83,28 +86,30 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     setNotifications(updatedNotifications);
     saveNotifications(updatedNotifications);
 
-    setNewTask({ title: '', description: '', priority: 'medium', assignedTo: '', dueDate: '' });
+    setNewTask({ title: '', description: '', priority: 'medium', assignedTo: '', startDate: '', endDate: '' });
     setShowCreateTask(false);
   };
 
   const handleCreateUser = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newUser.username || !newUser.email || !user?.teamId) return;
+    if (!newUser.username || !newUser.email || !newUser.password || !user?.teamId) return;
 
-    const newUserObj: User = {
+    const newUserObj: UserType = {
       id: Date.now().toString(),
       username: newUser.username,
       email: newUser.email,
+      password: newUser.password,
       role: newUser.role,
       teamId: user.teamId,
-      createdAt: new Date()
+      createdAt: new Date(),
+      addedBy: user.id
     };
 
     const updatedUsers = [...users, newUserObj];
     setUsers(updatedUsers);
     saveUsers(updatedUsers);
 
-    setNewUser({ username: '', email: '', role: 'user' });
+    setNewUser({ username: '', email: '', password: '', role: 'user' });
     setShowCreateUser(false);
   };
 
@@ -117,6 +122,22 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     );
     setTasks(updatedTasks);
     saveTasks(updatedTasks);
+
+    // Notify the assigned user about task update
+    const notification: Notification = {
+      id: Date.now().toString(),
+      userId: editingTask.assignedTo,
+      type: 'task_updated',
+      message: `Task "${editingTask.title}" has been updated`,
+      read: false,
+      createdAt: new Date(),
+      taskId: editingTask.id
+    };
+
+    const updatedNotifications = [...notifications, notification];
+    setNotifications(updatedNotifications);
+    saveNotifications(updatedNotifications);
+
     setEditingTask(null);
   };
 
@@ -154,7 +175,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
     const inProgressTasks = teamTasks.filter(t => t.status === 'in-progress').length;
     const openTasks = teamTasks.filter(t => t.status === 'open').length;
     const overdueTasks = teamTasks.filter(t => 
-      t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
+      t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
     ).length;
 
     return {
@@ -356,7 +377,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
             <form onSubmit={handleCreateTask} className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="lg:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Task Title</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Task Title *</label>
                   <input
                     type="text"
                     value={newTask.title}
@@ -364,16 +385,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                     placeholder="Enter task title"
                     required
-                  />
-                </div>
-                <div className="lg:col-span-2">
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea
-                    value={newTask.description}
-                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
-                    rows={4}
-                    placeholder="Describe the task in detail"
                   />
                 </div>
                 <div>
@@ -390,7 +401,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Assign To</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Assign To *</label>
                   <select
                     value={newTask.assignedTo}
                     onChange={(e) => setNewTask({ ...newTask, assignedTo: e.target.value })}
@@ -404,12 +415,31 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Due Date</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
                   <input
                     type="date"
-                    value={newTask.dueDate}
-                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                    value={newTask.startDate}
+                    onChange={(e) => setNewTask({ ...newTask, startDate: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
+                  <input
+                    type="date"
+                    value={newTask.endDate}
+                    onChange={(e) => setNewTask({ ...newTask, endDate: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                  />
+                </div>
+                <div className="lg:col-span-2">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                  <textarea
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                    rows={4}
+                    placeholder="Describe the task in detail"
                   />
                 </div>
               </div>
@@ -484,16 +514,20 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Task</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned To</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigned By</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Priority</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Due Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Start Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">End Date</th>
+                  <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Created</th>
                   <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {filteredTasks.map(task => {
                   const assignedUser = users.find(u => u.id === task.assignedTo);
-                  const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+                  const assignedByUser = users.find(u => u.id === task.assignedBy);
+                  const isOverdue = task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed';
                   
                   return (
                     <tr key={task.id} className={`hover:bg-gray-50 transition-colors ${isOverdue ? 'bg-red-50' : ''}`}>
@@ -515,6 +549,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                         </select>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          <User className="w-4 h-4 text-gray-400" />
+                          <span className="text-sm text-gray-900">{assignedByUser?.username}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}>
                           {task.priority.toUpperCase()}
                         </span>
@@ -525,14 +565,28 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {task.dueDate ? (
-                          <div className={isOverdue ? 'text-red-600 font-semibold' : ''}>
-                            {new Date(task.dueDate).toLocaleDateString()}
+                        {task.startDate ? (
+                          <div className="flex items-center space-x-1">
+                            <CalendarDays className="w-4 h-4 text-gray-400" />
+                            <span>{new Date(task.startDate).toLocaleDateString()}</span>
+                          </div>
+                        ) : (
+                          <span className="text-gray-400">Not set</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {task.endDate ? (
+                          <div className={`flex items-center space-x-1 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}>
+                            <Calendar className="w-4 h-4" />
+                            <span>{new Date(task.endDate).toLocaleDateString()}</span>
                             {isOverdue && <div className="text-xs">OVERDUE</div>}
                           </div>
                         ) : (
-                          <span className="text-gray-400">No due date</span>
+                          <span className="text-gray-400">Not set</span>
                         )}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(task.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <button
@@ -608,6 +662,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                         <option value="in-progress">In Progress</option>
                         <option value="completed">Completed</option>
                       </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">Start Date</label>
+                      <input
+                        type="date"
+                        value={editingTask.startDate ? new Date(editingTask.startDate).toISOString().split('T')[0] : ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, startDate: e.target.value ? new Date(e.target.value) : undefined })}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">End Date</label>
+                      <input
+                        type="date"
+                        value={editingTask.endDate ? new Date(editingTask.endDate).toISOString().split('T')[0] : ''}
+                        onChange={(e) => setEditingTask({ ...editingTask, endDate: e.target.value ? new Date(e.target.value) : undefined })}
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                      />
                     </div>
                   </div>
                   <div className="flex justify-end space-x-4">
@@ -716,7 +788,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
             <form onSubmit={handleCreateUser} className="space-y-6">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Username</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Username *</label>
                   <input
                     type="text"
                     value={newUser.username}
@@ -727,13 +799,24 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address</label>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Email Address *</label>
                   <input
                     type="email"
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                     className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
                     placeholder="Enter email address"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">Password *</label>
+                  <input
+                    type="password"
+                    value={newUser.password}
+                    onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
+                    className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-colors"
+                    placeholder="Enter password"
                     required
                   />
                 </div>
@@ -763,6 +846,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
             const memberTasks = teamTasks.filter(task => task.assignedTo === member.id);
             const completedTasks = memberTasks.filter(task => task.status === 'completed').length;
             const performance = memberTasks.length > 0 ? Math.round((completedTasks / memberTasks.length) * 100) : 0;
+            const addedByUser = users.find(u => u.id === member.addedBy);
 
             return (
               <div key={member.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
@@ -810,10 +894,15 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ activeTab }) => {
                   </div>
                 </div>
                 
-                <div className="mt-6 pt-4 border-t border-gray-100">
+                <div className="mt-6 pt-4 border-t border-gray-100 space-y-2">
                   <div className="text-xs text-gray-500">
                     Joined: {new Date(member.createdAt).toLocaleDateString()}
                   </div>
+                  {addedByUser && (
+                    <div className="text-xs text-gray-500">
+                      Added by: <span className="font-medium text-gray-700">{addedByUser.username}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             );

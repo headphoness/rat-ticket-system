@@ -7,18 +7,19 @@ export interface User {
   createdAt: Date;
   lastLogin?: Date;
   avatar?: string;
+  addedBy?: string;
+  password?: string;
 }
 
 export interface Team {
   id: string;
   name: string;
   description: string;
-  adminId: string;
+  adminIds: string[];
   memberIds: string[];
   createdAt: Date;
-  department?: string;
-  budget?: number;
-  targetCompletion?: number;
+  department: string;
+  createdBy: string;
 }
 
 export interface Task {
@@ -32,7 +33,8 @@ export interface Task {
   teamId: string;
   createdAt: Date;
   completedAt?: Date;
-  dueDate?: Date;
+  startDate?: Date;
+  endDate?: Date;
   estimatedHours?: number;
   actualHours?: number;
   tags?: string[];
@@ -42,11 +44,12 @@ export interface Task {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'task_assigned' | 'task_completed' | 'task_updated' | 'task_overdue' | 'task_started';
+  type: 'task_assigned' | 'task_completed' | 'task_updated' | 'task_overdue' | 'task_started' | 'team_created' | 'team_updated';
   message: string;
   read: boolean;
   createdAt: Date;
   taskId?: string;
+  teamId?: string;
 }
 
 export interface AuthContextType {

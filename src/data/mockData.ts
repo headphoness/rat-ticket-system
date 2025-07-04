@@ -9,7 +9,8 @@ export const defaultUsers: User[] = [
     role: 'superuser',
     createdAt: new Date('2024-01-01'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    password: 'password'
   },
   
   // Development Team
@@ -21,7 +22,9 @@ export const defaultUsers: User[] = [
     teamId: '1',
     createdAt: new Date('2024-01-02'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    addedBy: '1',
+    password: 'password'
   },
   {
     id: '3',
@@ -31,7 +34,9 @@ export const defaultUsers: User[] = [
     teamId: '1',
     createdAt: new Date('2024-01-03'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+    addedBy: '2',
+    password: 'password'
   },
   {
     id: '4',
@@ -41,7 +46,9 @@ export const defaultUsers: User[] = [
     teamId: '1',
     createdAt: new Date('2024-01-04'),
     lastLogin: new Date('2024-01-19'),
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    addedBy: '2',
+    password: 'password'
   },
   {
     id: '5',
@@ -51,7 +58,9 @@ export const defaultUsers: User[] = [
     teamId: '1',
     createdAt: new Date('2024-01-05'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    addedBy: '2',
+    password: 'password'
   },
   
   // Design Team
@@ -63,7 +72,9 @@ export const defaultUsers: User[] = [
     teamId: '2',
     createdAt: new Date('2024-01-06'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    addedBy: '1',
+    password: 'password'
   },
   {
     id: '7',
@@ -73,7 +84,9 @@ export const defaultUsers: User[] = [
     teamId: '2',
     createdAt: new Date('2024-01-07'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face',
+    addedBy: '6',
+    password: 'password'
   },
   {
     id: '8',
@@ -83,7 +96,9 @@ export const defaultUsers: User[] = [
     teamId: '2',
     createdAt: new Date('2024-01-08'),
     lastLogin: new Date('2024-01-19'),
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    addedBy: '6',
+    password: 'password'
   },
   
   // Marketing Team
@@ -95,7 +110,9 @@ export const defaultUsers: User[] = [
     teamId: '3',
     createdAt: new Date('2024-01-09'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1487412720507-e7ab37603c6f?w=150&h=150&fit=crop&crop=face',
+    addedBy: '1',
+    password: 'password'
   },
   {
     id: '10',
@@ -105,7 +122,9 @@ export const defaultUsers: User[] = [
     teamId: '3',
     createdAt: new Date('2024-01-10'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+    addedBy: '9',
+    password: 'password'
   },
   {
     id: '11',
@@ -115,7 +134,9 @@ export const defaultUsers: User[] = [
     teamId: '3',
     createdAt: new Date('2024-01-11'),
     lastLogin: new Date('2024-01-19'),
-    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
+    addedBy: '9',
+    password: 'password'
   },
   
   // QA Team
@@ -127,7 +148,9 @@ export const defaultUsers: User[] = [
     teamId: '4',
     createdAt: new Date('2024-01-12'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face',
+    addedBy: '1',
+    password: 'password'
   },
   {
     id: '13',
@@ -137,7 +160,9 @@ export const defaultUsers: User[] = [
     teamId: '4',
     createdAt: new Date('2024-01-13'),
     lastLogin: new Date('2024-01-20'),
-    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face',
+    addedBy: '12',
+    password: 'password'
   },
   {
     id: '14',
@@ -147,7 +172,9 @@ export const defaultUsers: User[] = [
     teamId: '4',
     createdAt: new Date('2024-01-14'),
     lastLogin: new Date('2024-01-19'),
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face'
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    addedBy: '12',
+    password: 'password'
   }
 ];
 
@@ -156,45 +183,41 @@ export const defaultTeams: Team[] = [
     id: '1',
     name: 'Development Team',
     description: 'Full-stack development, architecture, and technical implementation',
-    adminId: '2',
+    adminIds: ['2'],
     memberIds: ['2', '3', '4', '5'],
     createdAt: new Date('2024-01-01'),
     department: 'Engineering',
-    budget: 250000,
-    targetCompletion: 85
+    createdBy: '1'
   },
   {
     id: '2',
     name: 'Design Team',
     description: 'UI/UX design, visual identity, and user experience optimization',
-    adminId: '6',
+    adminIds: ['6'],
     memberIds: ['6', '7', '8'],
     createdAt: new Date('2024-01-02'),
     department: 'Design',
-    budget: 180000,
-    targetCompletion: 90
+    createdBy: '1'
   },
   {
     id: '3',
     name: 'Marketing Team',
     description: 'Digital marketing, content strategy, and brand management',
-    adminId: '9',
+    adminIds: ['9'],
     memberIds: ['9', '10', '11'],
     createdAt: new Date('2024-01-03'),
     department: 'Marketing',
-    budget: 200000,
-    targetCompletion: 80
+    createdBy: '1'
   },
   {
     id: '4',
     name: 'Quality Assurance',
     description: 'Testing, quality control, and performance optimization',
-    adminId: '12',
+    adminIds: ['12'],
     memberIds: ['12', '13', '14'],
     createdAt: new Date('2024-01-04'),
     department: 'QA',
-    budget: 150000,
-    targetCompletion: 95
+    createdBy: '1'
   }
 ];
 
@@ -211,7 +234,8 @@ export const defaultTasks: Task[] = [
     teamId: '1',
     createdAt: new Date('2024-01-10'),
     startedAt: new Date('2024-01-11'),
-    dueDate: new Date('2024-02-01'),
+    startDate: new Date('2024-01-11'),
+    endDate: new Date('2024-02-01'),
     estimatedHours: 40,
     actualHours: 25,
     tags: ['backend', 'security', 'authentication']
@@ -226,7 +250,8 @@ export const defaultTasks: Task[] = [
     assignedBy: '2',
     teamId: '1',
     createdAt: new Date('2024-01-12'),
-    dueDate: new Date('2024-01-25'),
+    startDate: new Date('2024-01-15'),
+    endDate: new Date('2024-01-25'),
     estimatedHours: 32,
     actualHours: 0,
     tags: ['database', 'performance', 'optimization']
@@ -243,7 +268,8 @@ export const defaultTasks: Task[] = [
     createdAt: new Date('2024-01-08'),
     startedAt: new Date('2024-01-09'),
     completedAt: new Date('2024-01-18'),
-    dueDate: new Date('2024-01-20'),
+    startDate: new Date('2024-01-09'),
+    endDate: new Date('2024-01-20'),
     estimatedHours: 16,
     actualHours: 14,
     tags: ['documentation', 'api']
@@ -259,7 +285,8 @@ export const defaultTasks: Task[] = [
     teamId: '1',
     createdAt: new Date('2024-01-11'),
     startedAt: new Date('2024-01-12'),
-    dueDate: new Date('2024-02-05'),
+    startDate: new Date('2024-01-12'),
+    endDate: new Date('2024-02-05'),
     estimatedHours: 60,
     actualHours: 35,
     tags: ['frontend', 'react', 'components']
@@ -274,7 +301,8 @@ export const defaultTasks: Task[] = [
     assignedBy: '2',
     teamId: '1',
     createdAt: new Date('2024-01-15'),
-    dueDate: new Date('2024-02-10'),
+    startDate: new Date('2024-01-20'),
+    endDate: new Date('2024-02-10'),
     estimatedHours: 48,
     actualHours: 0,
     tags: ['testing', 'quality']
@@ -293,7 +321,8 @@ export const defaultTasks: Task[] = [
     createdAt: new Date('2024-01-08'),
     startedAt: new Date('2024-01-09'),
     completedAt: new Date('2024-01-19'),
-    dueDate: new Date('2024-01-20'),
+    startDate: new Date('2024-01-09'),
+    endDate: new Date('2024-01-20'),
     estimatedHours: 45,
     actualHours: 42,
     tags: ['ui', 'ux', 'dashboard']
@@ -309,7 +338,8 @@ export const defaultTasks: Task[] = [
     teamId: '2',
     createdAt: new Date('2024-01-12'),
     startedAt: new Date('2024-01-13'),
-    dueDate: new Date('2024-01-30'),
+    startDate: new Date('2024-01-13'),
+    endDate: new Date('2024-01-30'),
     estimatedHours: 30,
     actualHours: 18,
     tags: ['mobile', 'wireframes', 'planning']
@@ -324,7 +354,8 @@ export const defaultTasks: Task[] = [
     assignedBy: '6',
     teamId: '2',
     createdAt: new Date('2024-01-14'),
-    dueDate: new Date('2024-02-15'),
+    startDate: new Date('2024-01-25'),
+    endDate: new Date('2024-02-15'),
     estimatedHours: 24,
     actualHours: 0,
     tags: ['branding', 'documentation']
@@ -342,7 +373,8 @@ export const defaultTasks: Task[] = [
     teamId: '3',
     createdAt: new Date('2024-01-09'),
     startedAt: new Date('2024-01-10'),
-    dueDate: new Date('2024-01-28'),
+    startDate: new Date('2024-01-10'),
+    endDate: new Date('2024-01-28'),
     estimatedHours: 50,
     actualHours: 30,
     tags: ['strategy', 'campaign', 'launch']
@@ -359,7 +391,8 @@ export const defaultTasks: Task[] = [
     createdAt: new Date('2024-01-07'),
     startedAt: new Date('2024-01-08'),
     completedAt: new Date('2024-01-17'),
-    dueDate: new Date('2024-01-18'),
+    startDate: new Date('2024-01-08'),
+    endDate: new Date('2024-01-18'),
     estimatedHours: 20,
     actualHours: 18,
     tags: ['social-media', 'content', 'planning']
@@ -374,7 +407,8 @@ export const defaultTasks: Task[] = [
     assignedBy: '9',
     teamId: '3',
     createdAt: new Date('2024-01-13'),
-    dueDate: new Date('2024-02-05'),
+    startDate: new Date('2024-01-20'),
+    endDate: new Date('2024-02-05'),
     estimatedHours: 35,
     actualHours: 0,
     tags: ['email', 'automation', 'onboarding']
@@ -392,7 +426,8 @@ export const defaultTasks: Task[] = [
     teamId: '4',
     createdAt: new Date('2024-01-10'),
     startedAt: new Date('2024-01-11'),
-    dueDate: new Date('2024-02-01'),
+    startDate: new Date('2024-01-11'),
+    endDate: new Date('2024-02-01'),
     estimatedHours: 55,
     actualHours: 32,
     tags: ['automation', 'testing', 'ci-cd']
@@ -407,7 +442,8 @@ export const defaultTasks: Task[] = [
     assignedBy: '12',
     teamId: '4',
     createdAt: new Date('2024-01-11'),
-    dueDate: new Date('2024-02-08'),
+    startDate: new Date('2024-01-18'),
+    endDate: new Date('2024-02-08'),
     estimatedHours: 40,
     actualHours: 0,
     tags: ['performance', 'load-testing']
@@ -424,43 +460,11 @@ export const defaultTasks: Task[] = [
     createdAt: new Date('2024-01-05'),
     startedAt: new Date('2024-01-06'),
     completedAt: new Date('2024-01-16'),
-    dueDate: new Date('2024-01-18'),
+    startDate: new Date('2024-01-06'),
+    endDate: new Date('2024-01-18'),
     estimatedHours: 30,
     actualHours: 28,
     tags: ['security', 'assessment', 'penetration-testing']
-  },
-
-  // Additional overdue tasks for testing
-  {
-    id: '15',
-    title: 'Legacy System Migration',
-    description: 'Migrate data from legacy system to new platform',
-    priority: 'high',
-    status: 'open',
-    assignedTo: '4',
-    assignedBy: '2',
-    teamId: '1',
-    createdAt: new Date('2024-01-01'),
-    dueDate: new Date('2024-01-15'), // Overdue
-    estimatedHours: 80,
-    actualHours: 0,
-    tags: ['migration', 'legacy', 'data']
-  },
-  {
-    id: '16',
-    title: 'User Feedback Analysis',
-    description: 'Analyze user feedback and create improvement recommendations',
-    priority: 'medium',
-    status: 'in-progress',
-    assignedTo: '11',
-    assignedBy: '9',
-    teamId: '3',
-    createdAt: new Date('2024-01-03'),
-    startedAt: new Date('2024-01-04'),
-    dueDate: new Date('2024-01-18'), // Overdue
-    estimatedHours: 25,
-    actualHours: 15,
-    tags: ['feedback', 'analysis', 'improvement']
   }
 ];
 
@@ -503,83 +507,47 @@ export const defaultNotifications: Notification[] = [
     taskId: '14'
   },
 
-  // Admin and Superuser notifications for task started
+  // Team creation notifications
   {
     id: '5',
     userId: '2',
-    type: 'task_started',
-    message: 'Sarah Johnson started working on "Implement User Authentication System"',
+    type: 'team_created',
+    message: 'A new team "Development Team" has been created by superuser',
     read: false,
-    createdAt: new Date('2024-01-11'),
-    taskId: '1'
+    createdAt: new Date('2024-01-01'),
+    teamId: '1'
   },
   {
     id: '6',
-    userId: '1',
-    type: 'task_started',
-    message: 'Sarah Johnson started working on "Implement User Authentication System"',
+    userId: '6',
+    type: 'team_created',
+    message: 'A new team "Design Team" has been created by superuser',
     read: false,
-    createdAt: new Date('2024-01-11'),
-    taskId: '1'
+    createdAt: new Date('2024-01-02'),
+    teamId: '2'
   },
   {
     id: '7',
-    userId: '6',
-    type: 'task_started',
-    message: 'David Martinez started working on "Mobile App Wireframes"',
+    userId: '9',
+    type: 'team_created',
+    message: 'A new team "Marketing Team" has been created by superuser',
     read: false,
-    createdAt: new Date('2024-01-13'),
-    taskId: '7'
+    createdAt: new Date('2024-01-03'),
+    teamId: '3'
   },
   {
     id: '8',
-    userId: '1',
-    type: 'task_started',
-    message: 'David Martinez started working on "Mobile App Wireframes"',
-    read: false,
-    createdAt: new Date('2024-01-13'),
-    taskId: '7'
-  },
-  {
-    id: '9',
-    userId: '9',
-    type: 'task_started',
-    message: 'Robert Taylor started working on "Q1 Marketing Campaign Strategy"',
-    read: false,
-    createdAt: new Date('2024-01-10'),
-    taskId: '9'
-  },
-  {
-    id: '10',
-    userId: '1',
-    type: 'task_started',
-    message: 'Robert Taylor started working on "Q1 Marketing Campaign Strategy"',
-    read: false,
-    createdAt: new Date('2024-01-10'),
-    taskId: '9'
-  },
-  {
-    id: '11',
     userId: '12',
-    type: 'task_started',
-    message: 'Nicole Thomas started working on "Automated Testing Framework"',
+    type: 'team_created',
+    message: 'A new team "Quality Assurance" has been created by superuser',
     read: false,
-    createdAt: new Date('2024-01-11'),
-    taskId: '12'
-  },
-  {
-    id: '12',
-    userId: '1',
-    type: 'task_started',
-    message: 'Nicole Thomas started working on "Automated Testing Framework"',
-    read: false,
-    createdAt: new Date('2024-01-11'),
-    taskId: '12'
+    createdAt: new Date('2024-01-04'),
+    teamId: '4'
   },
 
   // User notifications for task assignment
   {
-    id: '13',
+    id: '9',
     userId: '3',
     type: 'task_assigned',
     message: 'You have been assigned "Implement User Authentication System" by John Smith',
@@ -588,7 +556,7 @@ export const defaultNotifications: Notification[] = [
     taskId: '1'
   },
   {
-    id: '14',
+    id: '10',
     userId: '4',
     type: 'task_assigned',
     message: 'You have been assigned "Database Schema Optimization" by John Smith',
@@ -597,7 +565,7 @@ export const defaultNotifications: Notification[] = [
     taskId: '2'
   },
   {
-    id: '15',
+    id: '11',
     userId: '7',
     type: 'task_assigned',
     message: 'You have been assigned "Brand Guidelines Documentation" by Alex Brown',
@@ -606,68 +574,12 @@ export const defaultNotifications: Notification[] = [
     taskId: '8'
   },
   {
-    id: '16',
+    id: '12',
     userId: '10',
     type: 'task_assigned',
     message: 'You have been assigned "Email Marketing Automation" by Jennifer Lee',
     read: false,
     createdAt: new Date('2024-01-13'),
     taskId: '11'
-  },
-  {
-    id: '17',
-    userId: '13',
-    type: 'task_assigned',
-    message: 'You have been assigned "Automated Testing Framework" by Chris Anderson',
-    read: false,
-    createdAt: new Date('2024-01-10'),
-    taskId: '12'
-  },
-  {
-    id: '18',
-    userId: '14',
-    type: 'task_assigned',
-    message: 'You have been assigned "Performance Testing Suite" by Chris Anderson',
-    read: false,
-    createdAt: new Date('2024-01-11'),
-    taskId: '13'
-  },
-
-  // Overdue notifications
-  {
-    id: '19',
-    userId: '2',
-    type: 'task_overdue',
-    message: 'Task "Legacy System Migration" assigned to Mike Davis is overdue',
-    read: false,
-    createdAt: new Date('2024-01-16'),
-    taskId: '15'
-  },
-  {
-    id: '20',
-    userId: '1',
-    type: 'task_overdue',
-    message: 'Task "Legacy System Migration" assigned to Mike Davis is overdue',
-    read: false,
-    createdAt: new Date('2024-01-16'),
-    taskId: '15'
-  },
-  {
-    id: '21',
-    userId: '9',
-    type: 'task_overdue',
-    message: 'Task "User Feedback Analysis" assigned to Amanda White is overdue',
-    read: false,
-    createdAt: new Date('2024-01-19'),
-    taskId: '16'
-  },
-  {
-    id: '22',
-    userId: '1',
-    type: 'task_overdue',
-    message: 'Task "User Feedback Analysis" assigned to Amanda White is overdue',
-    read: false,
-    createdAt: new Date('2024-01-19'),
-    taskId: '16'
   }
 ];

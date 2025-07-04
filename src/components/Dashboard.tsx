@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, CheckSquare, Clock, AlertTriangle, TrendingUp, Award, Target, Building2, Calendar, Activity } from 'lucide-react';
+import { Users, CheckSquare, Clock, AlertTriangle, TrendingUp, Award, Target, Building2, Calendar, Activity, Search, Filter, SlidersHorizontal } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { getTasks, getUsers, getTeams } from '../utils/storage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
@@ -11,6 +11,9 @@ const Dashboard: React.FC = () => {
   const teams = getTeams();
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
 
   // Update time every minute
   useEffect(() => {
@@ -26,7 +29,7 @@ const Dashboard: React.FC = () => {
       const totalTasks = tasks.length;
       const completedTasks = tasks.filter(t => t.status === 'completed').length;
       const overdueTasks = tasks.filter(t => 
-        t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
+        t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
       ).length;
       const activeUsers = users.filter(u => u.role !== 'superuser').length;
 
@@ -75,7 +78,7 @@ const Dashboard: React.FC = () => {
       const completedTasks = teamTasks.filter(t => t.status === 'completed').length;
       const inProgressTasks = teamTasks.filter(t => t.status === 'in-progress').length;
       const overdueTasks = teamTasks.filter(t => 
-        t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
+        t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
       ).length;
 
       return [
@@ -122,7 +125,7 @@ const Dashboard: React.FC = () => {
     const completedTasks = myTasks.filter(t => t.status === 'completed').length;
     const inProgressTasks = myTasks.filter(t => t.status === 'in-progress').length;
     const overdueTasks = myTasks.filter(t => 
-      t.dueDate && new Date(t.dueDate) < new Date() && t.status !== 'completed'
+      t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
     ).length;
 
     return [
@@ -166,23 +169,32 @@ const Dashboard: React.FC = () => {
   };
 
   const getRecentActivity = () => {
+    let relevantTasks = [];
+    
     if (user?.role === 'user') {
-      return tasks
-        .filter(t => t.assignedTo === user.id)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
+      relevantTasks = tasks.filter(t => t.assignedTo === user.id);
+    } else if (user?.role === 'admin') {
+      relevantTasks = tasks.filter(t => t.teamId === user.teamId);
+    } else {
+      relevantTasks = tasks;
     }
 
-    if (user?.role === 'admin') {
-      return tasks
-        .filter(t => t.teamId === user.teamId)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-        .slice(0, 5);
-    }
-
-    return tasks
+    return relevantTasks
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
       .slice(0, 5);
+  };
+
+  const getFilteredRecentActivity = () => {
+    const recentTasks = getRecentActivity();
+    
+    return recentTasks.filter(task => {
+      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
+      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
+      
+      return matchesSearch && matchesStatus && matchesPriority;
+    });
   };
 
   const getPerformanceData = () => {
@@ -287,7 +299,7 @@ const Dashboard: React.FC = () => {
   };
 
   const stats = getStats();
-  const recentTasks = getRecentActivity();
+  const recentTasks = getFilteredRecentActivity();
   const performanceData = getPerformanceData();
   const taskDistribution = getTaskDistribution();
 
@@ -442,27 +454,71 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Enhanced Recent Activity */}
+      {/* Enhanced Recent Activity with Professional Filters */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="p-6 border-b border-gray-100">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
             <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
-            <span className="text-sm text-gray-500">Last 5 tasks</span>
+            
+            {/* Professional Filter Controls */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search activities..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm w-full sm:w-64"
+                />
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Filter className="w-4 h-4 text-gray-400" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="all">All Status</option>
+                  <option value="open">Open</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                </select>
+                
+                <select
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                >
+                  <option value="all">All Priority</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+                
+                <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <SlidersHorizontal className="w-4 h-4 text-gray-500" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
+        
         <div className="p-6">
           {recentTasks.length === 0 ? (
             <div className="text-center py-12">
               <CheckSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No recent tasks found</p>
-              <p className="text-gray-400 text-sm">Tasks will appear here once they're created</p>
+              <p className="text-gray-500 text-lg">No activities found</p>
+              <p className="text-gray-400 text-sm">Try adjusting your search or filter criteria</p>
             </div>
           ) : (
             <div className="space-y-4">
               {recentTasks.map((task) => {
                 const assignedUser = users.find(u => u.id === task.assignedTo);
                 const assignedByUser = users.find(u => u.id === task.assignedBy);
-                const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'completed';
+                const isOverdue = task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed';
                 
                 return (
                   <div key={task.id} className={`flex items-center justify-between p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-md ${
@@ -507,9 +563,14 @@ const Dashboard: React.FC = () => {
                               Started: {new Date(task.startedAt).toLocaleDateString()}
                             </div>
                           )}
-                          {task.dueDate && (
+                          {task.startDate && (
+                            <div className="text-sm text-gray-500 mb-1">
+                              Start: {new Date(task.startDate).toLocaleDateString()}
+                            </div>
+                          )}
+                          {task.endDate && (
                             <div className={`text-sm mb-1 ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
-                              Due: {new Date(task.dueDate).toLocaleDateString()}
+                              End: {new Date(task.endDate).toLocaleDateString()}
                             </div>
                           )}
                           {assignedUser && (
