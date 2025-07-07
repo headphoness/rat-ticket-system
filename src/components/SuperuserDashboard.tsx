@@ -10,10 +10,10 @@ interface SuperuserDashboardProps {
 }
 
 const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) => {
-  const [users, setUsers] = useState<User[]>(getUsers());
-  const [teams, setTeams] = useState<Team[]>(getTeams());
-  const [tasks] = useState<Task[]>(getTasks());
-  const [notifications, setNotifications] = useState(getNotifications());
+  const [users, setUsers] = useState<User[]>(getUsers() || []);
+  const [teams, setTeams] = useState<Team[]>(getTeams() || []);
+  const [tasks] = useState<Task[]>(getTasks() || []);
+  const [notifications, setNotifications] = useState(getNotifications() || []);
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [showCreateUser, setShowCreateUser] = useState(false);
   const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
