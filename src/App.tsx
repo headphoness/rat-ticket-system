@@ -9,12 +9,12 @@ import UserDashboard from './components/UserDashboard';
 
 const AppContent: React.FC = () => {
   const { user, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState('dashboard'); // Always default to 'dashboard'
+  const [activeTab, setActiveTab] = useState('dashboard');
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-indigo-600"></div>
       </div>
     );
   }
@@ -24,12 +24,10 @@ const AppContent: React.FC = () => {
   }
 
   const renderContent = () => {
-    // Always show Dashboard component for 'dashboard' tab regardless of user role
     if (activeTab === 'dashboard') {
       return <Dashboard />;
     }
 
-    // Role-specific content for other tabs
     if (user.role === 'superuser') {
       return <SuperuserDashboard activeTab={activeTab} />;
     }
@@ -42,7 +40,6 @@ const AppContent: React.FC = () => {
       return <UserDashboard activeTab={activeTab} />;
     }
 
-    // Fallback to Dashboard if no specific content found
     return <Dashboard />;
   };
 
