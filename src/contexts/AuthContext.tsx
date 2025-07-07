@@ -30,12 +30,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const users = getUsers();
-    const foundUser = users.find(u => u.username === username);
+    const foundUser = users.find(u => u.username === username && u.password === password);
     
-    // Simple password validation (in real app, use proper authentication)
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      setCurrentUser(foundUser);
+    if (foundUser && foundUser.status === 'active') {
+      const updatedUser = { ...foundUser, lastLogin: new Date() };
+      setUser(updatedUser);
+      setCurrentUser(updatedUser);
       setIsLoading(false);
       return true;
     }

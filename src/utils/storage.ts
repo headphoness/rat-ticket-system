@@ -1,10 +1,10 @@
-import { User, Team, Task, Notification } from '../types';
-import { defaultUsers, defaultTeams, defaultTasks, defaultNotifications } from '../data/mockData';
+import { User, Team, Ticket, Notification } from '../types';
+import { defaultUsers, defaultTeams, defaultTickets, defaultNotifications } from '../data/mockData';
 
 const STORAGE_KEYS = {
   USERS: 'ticketing_users',
   TEAMS: 'ticketing_teams',
-  TASKS: 'ticketing_tasks',
+  TICKETS: 'ticketing_tickets',
   NOTIFICATIONS: 'ticketing_notifications',
   CURRENT_USER: 'ticketing_current_user'
 };
@@ -17,8 +17,8 @@ export const initializeData = () => {
   if (!localStorage.getItem(STORAGE_KEYS.TEAMS)) {
     localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(defaultTeams));
   }
-  if (!localStorage.getItem(STORAGE_KEYS.TASKS)) {
-    localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(defaultTasks));
+  if (!localStorage.getItem(STORAGE_KEYS.TICKETS)) {
+    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(defaultTickets));
   }
   if (!localStorage.getItem(STORAGE_KEYS.NOTIFICATIONS)) {
     localStorage.setItem(STORAGE_KEYS.NOTIFICATIONS, JSON.stringify(defaultNotifications));
@@ -50,14 +50,14 @@ export const saveTeams = (teams: Team[]) => {
   localStorage.setItem(STORAGE_KEYS.TEAMS, JSON.stringify(teams));
 };
 
-// Tasks
-export const getTasks = (): Task[] => {
-  const tasks = localStorage.getItem(STORAGE_KEYS.TASKS);
-  return tasks ? JSON.parse(tasks) : [];
+// Tickets
+export const getTickets = (): Ticket[] => {
+  const tickets = localStorage.getItem(STORAGE_KEYS.TICKETS);
+  return tickets ? JSON.parse(tickets) : [];
 };
 
-export const saveTasks = (tasks: Task[]) => {
-  localStorage.setItem(STORAGE_KEYS.TASKS, JSON.stringify(tasks));
+export const saveTickets = (tickets: Ticket[]) => {
+  localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(tickets));
 };
 
 // Notifications
@@ -82,4 +82,32 @@ export const setCurrentUser = (user: User | null) => {
   } else {
     localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
   }
+};
+
+// Utility functions
+export const generateId = (): string => {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+};
+
+export const createNotification = (
+  userId: string,
+  type: Notification['type'],
+  title: string,
+  message: string,
+  priority: 'low' | 'medium' | 'high' = 'medium',
+  ticketId?: string,
+  teamId?: string
+): Notification => {
+  return {
+    id: generateId(),
+    userId,
+    type,
+    title,
+    message,
+    read: false,
+    createdAt: new Date(),
+    priority,
+    ticketId,
+    teamId
+  };
 };

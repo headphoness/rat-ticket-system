@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Eye, EyeOff, ArrowRight, Building2 } from 'lucide-react';
+import { Shield, Eye, EyeOff, ArrowRight, Building2, Users, Ticket, BarChart3 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const Login: React.FC = () => {
@@ -15,72 +15,73 @@ const Login: React.FC = () => {
     
     const success = await login(username, password);
     if (!success) {
-      setError('Invalid credentials. Please check your username and password.');
+      setError('Invalid credentials or account is inactive. Please check your username and password.');
     }
   };
 
   const demoAccounts = [
-    { role: 'Superuser', username: 'superuser', desc: 'Full system access' },
-    { role: 'Admin', username: 'admin1', desc: 'Team management' },
-    { role: 'User', username: 'user1', desc: 'Task execution' }
+    { role: 'Superuser', username: 'superuser', desc: 'Full system access & management', color: 'from-purple-500 to-indigo-600' },
+    { role: 'Admin', username: 'admin1', desc: 'Team & ticket management', color: 'from-blue-500 to-cyan-600' },
+    { role: 'User', username: 'user1', desc: 'Ticket creation & updates', color: 'from-green-500 to-emerald-600' }
+  ];
+
+  const features = [
+    { icon: Ticket, title: 'Advanced Ticketing', desc: 'Comprehensive ticket management with priority levels' },
+    { icon: Users, title: 'Team Collaboration', desc: 'Seamless team coordination and communication' },
+    { icon: BarChart3, title: 'Analytics & Reports', desc: 'Detailed insights and performance metrics' },
+    { icon: Shield, title: 'Enterprise Security', desc: 'Role-based access control and data protection' }
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-4.0.3&auto=format&fit=crop&w=2074&q=80')] bg-cover bg-center opacity-10"></div>
       
-      <div className="relative w-full max-w-6xl grid lg:grid-cols-2 gap-8 items-center">
-        {/* Left Side - Branding */}
+      <div className="relative w-full max-w-7xl grid lg:grid-cols-2 gap-12 items-center">
+        {/* Left Side - Branding & Features */}
         <div className="hidden lg:block text-white space-y-8">
-          <div className="space-y-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center">
-                <Building2 className="w-7 h-7 text-white" />
+          <div className="space-y-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center">
+                <Building2 className="w-9 h-9 text-white" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold">TaskFlow Enterprise</h1>
-                <p className="text-purple-200">Professional Task Management Platform</p>
+                <h1 className="text-4xl font-bold">TicketFlow Pro</h1>
+                <p className="text-purple-200 text-lg">Enterprise Ticketing Platform</p>
               </div>
             </div>
+            
+            <p className="text-xl text-purple-100 leading-relaxed">
+              Streamline your organization's workflow with our comprehensive ticketing system designed for modern enterprises.
+            </p>
           </div>
           
-          <div className="space-y-6">
-            <h2 className="text-2xl font-semibold">Streamline Your Workflow</h2>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
-                <div>
-                  <h3 className="font-medium">Advanced Task Management</h3>
-                  <p className="text-purple-200 text-sm">Assign, track, and manage tasks across teams with powerful analytics</p>
+          <div className="grid grid-cols-1 gap-6">
+            {features.map((feature, index) => {
+              const Icon = feature.icon;
+              return (
+                <div key={index} className="flex items-start space-x-4 p-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+                  <div className="w-12 h-12 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg mb-1">{feature.title}</h3>
+                    <p className="text-purple-200 text-sm leading-relaxed">{feature.desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-purple-400 rounded-full mt-2"></div>
-                <div>
-                  <h3 className="font-medium">Real-time Collaboration</h3>
-                  <p className="text-purple-200 text-sm">Stay connected with instant notifications and team updates</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 bg-indigo-400 rounded-full mt-2"></div>
-                <div>
-                  <h3 className="font-medium">Performance Insights</h3>
-                  <p className="text-purple-200 text-sm">Comprehensive analytics and reporting for data-driven decisions</p>
-                </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
         </div>
 
         {/* Right Side - Login Form */}
         <div className="w-full max-w-md mx-auto">
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-white/20">
+          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl p-8 border border-white/20">
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-white" />
+              <div className="w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                <Shield className="w-10 h-10 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900">Welcome Back</h2>
-              <p className="text-gray-600 mt-2">Sign in to access your workspace</p>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
+              <p className="text-gray-600">Sign in to access your workspace</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -163,14 +164,19 @@ const Login: React.FC = () => {
                       setUsername(account.username);
                       setPassword('password');
                     }}
-                    className="w-full text-left p-3 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200 group"
+                    className="w-full text-left p-4 rounded-xl border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-all duration-200 group"
                   >
                     <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-gray-900 group-hover:text-indigo-700">
-                          {account.role}
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 bg-gradient-to-r ${account.color} rounded-lg flex items-center justify-center`}>
+                          <Shield className="w-5 h-5 text-white" />
                         </div>
-                        <div className="text-sm text-gray-500">{account.desc}</div>
+                        <div>
+                          <div className="font-semibold text-gray-900 group-hover:text-indigo-700">
+                            {account.role}
+                          </div>
+                          <div className="text-sm text-gray-500">{account.desc}</div>
+                        </div>
                       </div>
                       <div className="text-xs text-gray-400 font-mono bg-gray-100 px-2 py-1 rounded">
                         {account.username}

@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Users, CheckSquare, Clock, AlertTriangle, TrendingUp, Award, Target, Building2, Calendar, Activity, Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Users, Ticket, Clock, AlertTriangle, TrendingUp, Award, Target, Building2, Calendar, Activity, CheckCircle, XCircle } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getTasks, getUsers, getTeams } from '../utils/storage';
+import { getTickets, getUsers, getTeams } from '../utils/storage';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
-  const tasks = getTasks();
+  const tickets = getTickets();
   const users = getUsers();
   const teams = getTeams();
-  const [selectedTimeRange, setSelectedTimeRange] = useState('30d');
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [priorityFilter, setPriorityFilter] = useState('all');
 
   // Update time every minute
   useEffect(() => {
@@ -26,12 +22,13 @@ const Dashboard: React.FC = () => {
 
   const getStats = () => {
     if (user?.role === 'superuser') {
-      const totalTasks = tasks.length;
-      const completedTasks = tasks.filter(t => t.status === 'completed').length;
-      const overdueTasks = tasks.filter(t => 
-        t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
+      const totalTickets = tickets.length;
+      const openTickets = tickets.filter(t => t.status === 'open').length;
+      const inProgressTickets = tickets.filter(t => t.status === 'in-progress').length;
+      const resolvedTickets = tickets.filter(t => t.status === 'resolved').length;
+      const overdueTickets = tickets.filter(t => 
+        t.dueDate && new Date(t.dueDate) < new Date() && !['resolved', 'closed'].includes(t.status)
       ).length;
-      const activeUsers = users.filter(u => u.role !== 'superuser').length;
 
       return [
         {
@@ -53,17 +50,17 @@ const Dashboard: React.FC = () => {
           trend: { value: 8, isPositive: true }
         },
         {
-          label: 'Total Tasks',
-          value: totalTasks,
-          icon: CheckSquare,
+          label: 'Total Tickets',
+          value: totalTickets,
+          icon: Ticket,
           color: 'from-purple-500 to-purple-600',
           bgColor: 'bg-purple-50',
           textColor: 'text-purple-600',
           trend: { value: 15, isPositive: true }
         },
         {
-          label: 'Completion Rate',
-          value: `${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}%`,
+          label: 'Resolution Rate',
+          value: `${totalTickets > 0 ? Math.round((resolvedTickets / totalTickets) * 100) : 0}%`,
           icon: Award,
           color: 'from-emerald-500 to-emerald-600',
           bgColor: 'bg-emerald-50',
@@ -74,17 +71,18 @@ const Dashboard: React.FC = () => {
     }
 
     if (user?.role === 'admin') {
-      const teamTasks = tasks.filter(t => t.teamId === user.teamId);
-      const completedTasks = teamTasks.filter(t => t.status === 'completed').length;
-      const inProgressTasks = teamTasks.filter(t => t.status === 'in-progress').length;
-      const overdueTasks = teamTasks.filter(t => 
-        t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
+      const teamTickets = tickets.filter(t => t.teamId === user.teamId);
+      const openTickets = teamTickets.filter(t => t.status === 'open').length;
+      const inProgressTickets = teamTickets.filter(t => t.status === 'in-progress').length;
+      const resolvedTickets = teamTickets.filter(t => t.status === 'resolved').length;
+      const overdueTickets = teamTickets.filter(t => 
+        t.dueDate && new Date(t.dueDate) < new Date() && !['resolved', 'closed'].includes(t.status)
       ).length;
 
       return [
         {
-          label: 'Team Tasks',
-          value: teamTasks.length,
+          label: 'Team Tickets',
+          value: teamTickets.length,
           icon: Target,
           color: 'from-blue-500 to-blue-600',
           bgColor: 'bg-blue-50',
@@ -92,9 +90,9 @@ const Dashboard: React.FC = () => {
           trend: { value: 10, isPositive: true }
         },
         {
-          label: 'Completed',
-          value: completedTasks,
-          icon: Award,
+          label: 'Resolved',
+          value: resolvedTickets,
+          icon: CheckCircle,
           color: 'from-green-500 to-green-600',
           bgColor: 'bg-green-50',
           textColor: 'text-green-600',
@@ -102,7 +100,7 @@ const Dashboard: React.FC = () => {
         },
         {
           label: 'In Progress',
-          value: inProgressTasks,
+          value: inProgressTickets,
           icon: Clock,
           color: 'from-yellow-500 to-yellow-600',
           bgColor: 'bg-yellow-50',
@@ -111,7 +109,7 @@ const Dashboard: React.FC = () => {
         },
         {
           label: 'Overdue',
-          value: overdueTasks,
+          value: overdueTickets,
           icon: AlertTriangle,
           color: 'from-red-500 to-red-600',
           bgColor: 'bg-red-50',
@@ -121,17 +119,18 @@ const Dashboard: React.FC = () => {
       ];
     }
 
-    const myTasks = tasks.filter(t => t.assignedTo === user?.id);
-    const completedTasks = myTasks.filter(t => t.status === 'completed').length;
-    const inProgressTasks = myTasks.filter(t => t.status === 'in-progress').length;
-    const overdueTasks = myTasks.filter(t => 
-      t.endDate && new Date(t.endDate) < new Date() && t.status !== 'completed'
+    const myTickets = tickets.filter(t => t.assignedTo === user?.id || t.reportedBy === user?.id);
+    const openTickets = myTickets.filter(t => t.status === 'open').length;
+    const inProgressTickets = myTickets.filter(t => t.status === 'in-progress').length;
+    const resolvedTickets = myTickets.filter(t => t.status === 'resolved').length;
+    const overdueTickets = myTickets.filter(t => 
+      t.dueDate && new Date(t.dueDate) < new Date() && !['resolved', 'closed'].includes(t.status)
     ).length;
 
     return [
       {
-        label: 'My Tasks',
-        value: myTasks.length,
+        label: 'My Tickets',
+        value: myTickets.length,
         icon: Target,
         color: 'from-blue-500 to-blue-600',
         bgColor: 'bg-blue-50',
@@ -139,9 +138,9 @@ const Dashboard: React.FC = () => {
         trend: { value: 5, isPositive: true }
       },
       {
-        label: 'Completed',
-        value: completedTasks,
-        icon: Award,
+        label: 'Resolved',
+        value: resolvedTickets,
+        icon: CheckCircle,
         color: 'from-green-500 to-green-600',
         bgColor: 'bg-green-50',
         textColor: 'text-green-600',
@@ -149,7 +148,7 @@ const Dashboard: React.FC = () => {
       },
       {
         label: 'In Progress',
-        value: inProgressTasks,
+        value: inProgressTickets,
         icon: Clock,
         color: 'from-yellow-500 to-yellow-600',
         bgColor: 'bg-yellow-50',
@@ -158,7 +157,7 @@ const Dashboard: React.FC = () => {
       },
       {
         label: 'Overdue',
-        value: overdueTasks,
+        value: overdueTickets,
         icon: AlertTriangle,
         color: 'from-red-500 to-red-600',
         bgColor: 'bg-red-50',
@@ -169,44 +168,31 @@ const Dashboard: React.FC = () => {
   };
 
   const getRecentActivity = () => {
-    let relevantTasks = [];
+    let relevantTickets = [];
     
     if (user?.role === 'user') {
-      relevantTasks = tasks.filter(t => t.assignedTo === user.id);
+      relevantTickets = tickets.filter(t => t.assignedTo === user.id || t.reportedBy === user.id);
     } else if (user?.role === 'admin') {
-      relevantTasks = tasks.filter(t => t.teamId === user.teamId);
+      relevantTickets = tickets.filter(t => t.teamId === user.teamId);
     } else {
-      relevantTasks = tasks;
+      relevantTickets = tickets;
     }
 
-    return relevantTasks
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return relevantTickets
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5);
-  };
-
-  const getFilteredRecentActivity = () => {
-    const recentTasks = getRecentActivity();
-    
-    return recentTasks.filter(task => {
-      const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           task.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || task.status === statusFilter;
-      const matchesPriority = priorityFilter === 'all' || task.priority === priorityFilter;
-      
-      return matchesSearch && matchesStatus && matchesPriority;
-    });
   };
 
   const getPerformanceData = () => {
     if (user?.role === 'superuser') {
       return teams.map(team => {
-        const teamTasks = tasks.filter(task => task.teamId === team.id);
-        const completedTasks = teamTasks.filter(task => task.status === 'completed').length;
+        const teamTickets = tickets.filter(ticket => ticket.teamId === team.id);
+        const resolvedTickets = teamTickets.filter(ticket => ticket.status === 'resolved').length;
         return {
           name: team.name,
-          completed: completedTasks,
-          total: teamTasks.length,
-          performance: teamTasks.length > 0 ? Math.round((completedTasks / teamTasks.length) * 100) : 0
+          resolved: resolvedTickets,
+          total: teamTickets.length,
+          performance: teamTickets.length > 0 ? Math.round((resolvedTickets / teamTickets.length) * 100) : 0
         };
       });
     }
@@ -214,19 +200,19 @@ const Dashboard: React.FC = () => {
     if (user?.role === 'admin') {
       const teamMembers = users.filter(u => u.teamId === user.teamId && u.role === 'user');
       return teamMembers.map(member => {
-        const memberTasks = tasks.filter(task => task.assignedTo === member.id);
-        const completedTasks = memberTasks.filter(task => task.status === 'completed').length;
+        const memberTickets = tickets.filter(ticket => ticket.assignedTo === member.id);
+        const resolvedTickets = memberTickets.filter(ticket => ticket.status === 'resolved').length;
         return {
-          name: member.username,
-          completed: completedTasks,
-          total: memberTasks.length,
-          performance: memberTasks.length > 0 ? Math.round((completedTasks / memberTasks.length) * 100) : 0
+          name: member.firstName,
+          resolved: resolvedTickets,
+          total: memberTickets.length,
+          performance: memberTickets.length > 0 ? Math.round((resolvedTickets / memberTickets.length) * 100) : 0
         };
       });
     }
 
     // User performance over time
-    const myTasks = tasks.filter(t => t.assignedTo === user?.id);
+    const myTickets = tickets.filter(t => t.assignedTo === user?.id || t.reportedBy === user?.id);
     const last7Days = Array.from({ length: 7 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (6 - i));
@@ -234,41 +220,43 @@ const Dashboard: React.FC = () => {
     });
 
     return last7Days.map(date => {
-      const completedTasks = myTasks.filter(task => 
-        task.completedAt && new Date(task.completedAt).toISOString().split('T')[0] === date
+      const resolvedTickets = myTickets.filter(ticket => 
+        ticket.resolvedAt && new Date(ticket.resolvedAt).toISOString().split('T')[0] === date
       );
       return {
         name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-        completed: completedTasks.length,
-        total: myTasks.length
+        resolved: resolvedTickets.length,
+        total: myTickets.length
       };
     });
   };
 
-  const getTaskDistribution = () => {
-    const relevantTasks = user?.role === 'user' 
-      ? tasks.filter(t => t.assignedTo === user.id)
+  const getTicketDistribution = () => {
+    const relevantTickets = user?.role === 'user' 
+      ? tickets.filter(t => t.assignedTo === user.id || t.reportedBy === user.id)
       : user?.role === 'admin'
-      ? tasks.filter(t => t.teamId === user.teamId)
-      : tasks;
+      ? tickets.filter(t => t.teamId === user.teamId)
+      : tickets;
 
-    const statusCount = relevantTasks.reduce((acc, task) => {
-      acc[task.status] = (acc[task.status] || 0) + 1;
+    const statusCount = relevantTickets.reduce((acc, ticket) => {
+      acc[ticket.status] = (acc[ticket.status] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     return [
-      { name: 'Completed', value: statusCount.completed || 0, color: '#10B981' },
+      { name: 'Open', value: statusCount.open || 0, color: '#EF4444' },
       { name: 'In Progress', value: statusCount['in-progress'] || 0, color: '#3B82F6' },
-      { name: 'Open', value: statusCount.open || 0, color: '#EF4444' }
+      { name: 'Resolved', value: statusCount.resolved || 0, color: '#10B981' },
+      { name: 'Closed', value: statusCount.closed || 0, color: '#6B7280' }
     ];
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'urgent': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'urgent': return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'high': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'medium': return 'bg-blue-100 text-blue-800 border-blue-200';
       case 'low': return 'bg-green-100 text-green-800 border-green-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
@@ -276,9 +264,11 @@ const Dashboard: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800 border-green-200';
+      case 'resolved': return 'bg-green-100 text-green-800 border-green-200';
       case 'in-progress': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
       case 'open': return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'closed': return 'bg-purple-100 text-purple-800 border-purple-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -299,9 +289,9 @@ const Dashboard: React.FC = () => {
   };
 
   const stats = getStats();
-  const recentTasks = getFilteredRecentActivity();
+  const recentTickets = getRecentActivity();
   const performanceData = getPerformanceData();
-  const taskDistribution = getTaskDistribution();
+  const ticketDistribution = getTicketDistribution();
 
   return (
     <div className="space-y-8">
@@ -311,8 +301,8 @@ const Dashboard: React.FC = () => {
         <div className="relative z-10">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold mb-2">{getGreeting()}, {user?.username}!</h1>
-              <p className="text-indigo-100 text-lg mb-4">Here's your performance overview and recent activity.</p>
+              <h1 className="text-4xl font-bold mb-2">{getGreeting()}, {user?.firstName}!</h1>
+              <p className="text-indigo-100 text-lg mb-4">Here's your ticketing system overview and recent activity.</p>
               <div className="flex items-center space-x-6 text-sm">
                 <div className="flex items-center space-x-2">
                   <Calendar className="w-4 h-4" />
@@ -375,15 +365,6 @@ const Dashboard: React.FC = () => {
               {user?.role === 'superuser' ? 'Team Performance' : 
                user?.role === 'admin' ? 'Member Performance' : 'My Weekly Progress'}
             </h3>
-            <select 
-              value={selectedTimeRange}
-              onChange={(e) => setSelectedTimeRange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-            >
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-              <option value="90d">Last 90 days</option>
-            </select>
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
@@ -402,7 +383,7 @@ const Dashboard: React.FC = () => {
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="completed" 
+                    dataKey="resolved" 
                     stroke="#6366F1" 
                     strokeWidth={3} 
                     dot={{ fill: '#6366F1', strokeWidth: 2, r: 6 }} 
@@ -421,7 +402,7 @@ const Dashboard: React.FC = () => {
                       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
                     }} 
                   />
-                  <Bar dataKey="completed" fill="#10B981" name="Completed" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="resolved" fill="#10B981" name="Resolved" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="total" fill="#E5E7EB" name="Total" radius={[4, 4, 0, 0]} />
                 </BarChart>
               )}
@@ -429,21 +410,21 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Task Distribution */}
+        {/* Ticket Distribution */}
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Task Distribution</h3>
+          <h3 className="text-xl font-bold text-gray-900 mb-6">Ticket Distribution</h3>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
-                  data={taskDistribution}
+                  data={ticketDistribution}
                   cx="50%"
                   cy="50%"
                   outerRadius={100}
                   dataKey="value"
                   label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
                 >
-                  {taskDistribution.map((entry, index) => (
+                  {ticketDistribution.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -454,138 +435,74 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Enhanced Recent Activity with Professional Filters */}
+      {/* Recent Activity */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100">
         <div className="p-6 border-b border-gray-100">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-            <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
-            
-            {/* Professional Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search activities..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm w-full sm:w-64"
-                />
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Filter className="w-4 h-4 text-gray-400" />
-                <select
-                  value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="all">All Status</option>
-                  <option value="open">Open</option>
-                  <option value="in-progress">In Progress</option>
-                  <option value="completed">Completed</option>
-                </select>
-                
-                <select
-                  value={priorityFilter}
-                  onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                >
-                  <option value="all">All Priority</option>
-                  <option value="urgent">Urgent</option>
-                  <option value="high">High</option>
-                  <option value="medium">Medium</option>
-                  <option value="low">Low</option>
-                </select>
-                
-                <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                  <SlidersHorizontal className="w-4 h-4 text-gray-500" />
-                </button>
-              </div>
-            </div>
-          </div>
+          <h2 className="text-xl font-bold text-gray-900">Recent Activity</h2>
         </div>
         
         <div className="p-6">
-          {recentTasks.length === 0 ? (
+          {recentTickets.length === 0 ? (
             <div className="text-center py-12">
-              <CheckSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-              <p className="text-gray-500 text-lg">No activities found</p>
-              <p className="text-gray-400 text-sm">Try adjusting your search or filter criteria</p>
+              <Ticket className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 text-lg">No recent activity</p>
+              <p className="text-gray-400 text-sm">Tickets will appear here as they are created or updated</p>
             </div>
           ) : (
             <div className="space-y-4">
-              {recentTasks.map((task) => {
-                const assignedUser = users.find(u => u.id === task.assignedTo);
-                const assignedByUser = users.find(u => u.id === task.assignedBy);
-                const isOverdue = task.endDate && new Date(task.endDate) < new Date() && task.status !== 'completed';
+              {recentTickets.map((ticket) => {
+                const assignedUser = users.find(u => u.id === ticket.assignedTo);
+                const reportedByUser = users.find(u => u.id === ticket.reportedBy);
+                const isOverdue = ticket.dueDate && new Date(ticket.dueDate) < new Date() && !['resolved', 'closed'].includes(ticket.status);
                 
                 return (
-                  <div key={task.id} className={`flex items-center justify-between p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-md ${
+                  <div key={ticket.id} className={`flex items-center justify-between p-6 rounded-xl border-2 transition-all duration-300 hover:shadow-md ${
                     isOverdue ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50 hover:border-gray-200'
                   }`}>
                     <div className="flex-1">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center space-x-3 mb-2">
-                            <h3 className="font-semibold text-gray-900 text-lg">{task.title}</h3>
+                            <h3 className="font-semibold text-gray-900 text-lg">{ticket.title}</h3>
                             {isOverdue && (
                               <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
                                 OVERDUE
                               </span>
                             )}
                           </div>
-                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{task.description}</p>
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{ticket.description}</p>
                           <div className="flex items-center space-x-4">
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(task.priority)}`}>
-                              {task.priority.toUpperCase()}
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getPriorityColor(ticket.priority)}`}>
+                              {ticket.priority.toUpperCase()}
                             </span>
-                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(task.status)}`}>
-                              {task.status.replace('-', ' ').toUpperCase()}
+                            <span className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(ticket.status)}`}>
+                              {ticket.status.replace('-', ' ').toUpperCase()}
                             </span>
-                            {task.tags && task.tags.length > 0 && (
-                              <div className="flex space-x-1">
-                                {task.tags.slice(0, 2).map(tag => (
-                                  <span key={tag} className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs">
+                              {ticket.category}
+                            </span>
                           </div>
                         </div>
                         <div className="text-right ml-6">
                           <div className="text-sm text-gray-500 mb-1">
-                            Created: {new Date(task.createdAt).toLocaleDateString()}
+                            Created: {new Date(ticket.createdAt).toLocaleDateString()}
                           </div>
-                          {task.startedAt && (
-                            <div className="text-sm text-blue-600 mb-1">
-                              Started: {new Date(task.startedAt).toLocaleDateString()}
-                            </div>
-                          )}
-                          {task.startDate && (
-                            <div className="text-sm text-gray-500 mb-1">
-                              Start: {new Date(task.startDate).toLocaleDateString()}
-                            </div>
-                          )}
-                          {task.endDate && (
+                          <div className="text-sm text-gray-500 mb-1">
+                            Updated: {new Date(ticket.updatedAt).toLocaleDateString()}
+                          </div>
+                          {ticket.dueDate && (
                             <div className={`text-sm mb-1 ${isOverdue ? 'text-red-600 font-semibold' : 'text-gray-500'}`}>
-                              End: {new Date(task.endDate).toLocaleDateString()}
+                              Due: {new Date(ticket.dueDate).toLocaleDateString()}
                             </div>
                           )}
                           {assignedUser && (
                             <div className="text-xs text-gray-400">
-                              Assigned to: <span className="font-medium">{assignedUser.username}</span>
+                              Assigned to: <span className="font-medium">{assignedUser.firstName} {assignedUser.lastName}</span>
                             </div>
                           )}
-                          {assignedByUser && (
+                          {reportedByUser && (
                             <div className="text-xs text-gray-400">
-                              By: <span className="font-medium">{assignedByUser.username}</span>
-                            </div>
-                          )}
-                          {task.estimatedHours && (
-                            <div className="text-xs text-gray-400 mt-1">
-                              Est: {task.estimatedHours}h | Actual: {task.actualHours || 0}h
+                              Reported by: <span className="font-medium">{reportedByUser.firstName} {reportedByUser.lastName}</span>
                             </div>
                           )}
                         </div>
