@@ -1072,7 +1072,7 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
                     dataKey="value"
                     label={({ name, value, percent }) => `${name}: ${value} (${(percent * 100).toFixed(0)}%)`}
                   >
-                    {userRoleData.map((entry, index) => (
+                    {userRoleData && userRoleData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
