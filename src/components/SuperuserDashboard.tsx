@@ -239,10 +239,10 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.lastName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.username.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = (user.firstName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.lastName || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.email || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         (user.username || '').toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || user.status === statusFilter;
     const matchesRole = roleFilter === 'all' || user.role === roleFilter;
     
@@ -250,8 +250,8 @@ const SuperuserDashboard: React.FC<SuperuserDashboardProps> = ({ activeTab }) =>
   });
 
   const filteredTeams = teams.filter(team => {
-    return team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           team.department.toLowerCase().includes(searchTerm.toLowerCase());
+    return (team.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+           (team.department || '').toLowerCase().includes(searchTerm.toLowerCase());
   });
 
   if (activeTab === 'users') {
